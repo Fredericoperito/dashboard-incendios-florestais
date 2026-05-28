@@ -48,7 +48,7 @@
         .kpi-label { color: #b0b0b0; font-size: 0.9em; margin-bottom: 5px; }
         .kpi-value { font-size: 2.2em; font-weight: bold; color: #FFD700; }
         
-        /* Nova Grade de Gráficos */
+        /* Grade de Gráficos */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 30px; }
         .chart-container, .table-container { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; border: 1px solid rgba(230, 92, 0, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; }
         canvas { max-width: 100%; }
@@ -126,7 +126,7 @@
 </div>
 
 <script>
-    // ⚠️ COLOQUE A SUA URL NOVA AQUI
+    // ⚠️ COLOQUE A SUA URL NOVA AQUI (Terminando em /exec)
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvHFG7wG2Ieqn_0S0yjZTWc9tFXWPgBYq1GwKvBEVYG8cyEC8wjXpKSn5VuOU14uUbzA/exec";
 
     let dadosOriginais = [];
@@ -173,7 +173,9 @@
             mostrarStatus("✅ Regulação enviada!", "success");
             zerarCamposFormulario(); 
             setTimeout(() => document.getElementById('statusContainer').innerHTML = '', 4000);
-            setTimeout(carregarDadosDaPlanilha, 1500);
+            
+            // Aguarda 1 segundo e recarrega a planilha
+            setTimeout(carregarDadosDaPlanilha, 1000);
         } catch (e) {
             mostrarStatus("❌ Erro ao enviar.", "error");
         }
@@ -181,8 +183,16 @@
 
     async function carregarDadosDaPlanilha() {
         try {
-            const res = await fetch(APPS_SCRIPT_URL);
+            // MÁGICA CONTRA O CACHE: O "?t=" adiciona os milissegundos atuais na URL
+            const urlSemCache = APPS_SCRIPT_URL + "?t=" + new Date().getTime();
+            
+            const res = await fetch(urlSemCache);
             const dados = await res.json();
+            
+            // Verificação de erro vinda do Google Sheets
+            if (dados.erro) {
+                throw new Error(dados.erro);
+            }
             
             dadosOriginais = dados.map(row => ({
                 Data: row['Data da regulacao'] || row['data'] || row['Data'],
@@ -192,7 +202,9 @@
 
             aplicarFiltros();
         } catch (e) {
-            console.error(e);
+            console.error("Erro na leitura:", e);
+            mostrarStatus("⚠️ Erro ao carregar gráficos: " + e.message, "error");
+            setTimeout(() => document.getElementById('statusContainer').innerHTML = '', 6000);
         }
     }
 
