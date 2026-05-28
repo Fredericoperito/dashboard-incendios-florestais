@@ -3,97 +3,65 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel · Incêndios Florestais · CBMERJ</title>
+    <title>Dashboard · Incêndios Florestais · CBMERJ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e0e0e0; padding: 20px; min-height: 100vh;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e0e0e0; padding: 20px; min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; }
         
-        /* Cabeçalho Ajustado para travar o tamanho das logos */
-        header {
-            margin-bottom: 30px; padding: 20px;
-            background: rgba(255,255,255,0.05); border-radius: 12px;
-            border: 1px solid rgba(230, 92, 0, 0.4);
-        }
+        header { margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(230, 92, 0, 0.4); }
         .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         .header-text { text-align: center; flex: 1; }
-        
-        /* A MÁGICA DAS LOGOS AQUI: Trava a altura em 80px e não deixa expandir */
-        .logo-cbmerj, .logo-dppt { 
-            height: 120px; 
-            width: auto; 
-            object-fit: contain; 
-            flex-shrink: 0; 
-        }
+        .logo-cbmerj, .logo-dppt { height: 80px; width: auto; object-fit: contain; flex-shrink: 0; }
         
         h1 { color: #E65C00; font-size: 2.2em; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .subtitle { color: #FFD700; font-size: 1.1em; margin-bottom: 4px; }
         .description { color: #b0b0b0; font-size: 0.9em; }
 
-        /* Formulário de Preenchimento Simplificado */
-        .planilha-diaria {
-            background: rgba(255,255,255,0.08); border-radius: 12px;
-            padding: 25px; margin-bottom: 30px; border: 2px solid #E65C00;
-        }
+        .planilha-diaria { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 2px solid #E65C00; }
         .form-row { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
         .form-row label { color: #FFD700; font-weight: 600; min-width: 180px; }
-        .form-row input[type="date"], .search-wrapper input {
-            padding: 10px; border-radius: 6px; border: 1px solid #E65C00;
-            background: rgba(255,255,255,0.1); color: #fff;
-        }
+        .form-row input[type="date"], .search-wrapper input { padding: 10px; border-radius: 6px; border: 1px solid #E65C00; background: rgba(255,255,255,0.1); color: #fff; }
         
-        /* Tabela Sem Horários */
         .tabela-preenchimento { width: 100%; max-width: 800px; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.3); }
         .tabela-preenchimento th { background: #E65C00; color: #fff; padding: 12px; text-align: left; }
         .tabela-preenchimento td { padding: 10px; border: 1px solid rgba(230, 92, 0, 0.2); }
         .tabela-preenchimento td:first-child { color: #FFD700; font-weight: 600; width: 70%; }
         .tabela-preenchimento td:last-child { text-align: center; }
+        .tabela-preenchimento input[type="number"] { width: 100%; max-width: 150px; padding: 10px; border-radius: 4px; border: 1px solid #E65C00; background: rgba(255,255,255,0.1); color: #fff; text-align: center; font-size: 1.1em; }
         
-        .tabela-preenchimento input[type="number"] {
-            width: 100%; max-width: 150px; padding: 10px; border-radius: 4px; border: 1px solid #E65C00;
-            background: rgba(255,255,255,0.1); color: #fff; text-align: center; font-size: 1.1em;
-        }
         .aviso-data { color: #ff4d4d; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
 
-        /* Botões e Status */
-        .btn-enviar {
-            margin-top: 20px; padding: 15px; width: 100%; max-width: 800px;
-            background: linear-gradient(135deg, #E65C00 0%, #B33600 100%);
-            color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1.1em;
-        }
+        .btn-enviar { margin-top: 20px; padding: 15px; width: 100%; max-width: 800px; background: linear-gradient(135deg, #E65C00 0%, #B33600 100%); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1.1em; }
         .btn-enviar:hover { opacity: 0.9; }
         .status-message { padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold; }
         .status-success { background: #2e7d32; color: #fff; }
         .status-loading { background: #1565c0; color: #fff; }
         .status-error { background: #c62828; color: #fff; }
 
-        /* Painel Visual e Gráficos */
         .controls { display: flex; gap: 10px; margin-bottom: 25px; }
         .btn-refresh { background: #2e7d32; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        
         .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .kpi-card { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid rgba(230, 92, 0, 0.2); }
         .kpi-label { color: #b0b0b0; font-size: 0.9em; margin-bottom: 5px; }
-        .kpi-value { font-size: 1.8em; font-weight: bold; color: #FFD700; }
+        .kpi-value { font-size: 2.2em; font-weight: bold; color: #FFD700; }
         
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .chart-container, .table-container { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; border: 1px solid rgba(230, 92, 0, 0.2); }
-        
-        /* Busca */
-        .search-wrapper { position: relative; display: inline-flex; align-items: center; margin-bottom: 15px; }
-        .search-wrapper input { padding-left: 35px; width: 300px; }
+        /* Nova Grade de Gráficos */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .chart-container, .table-container { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; border: 1px solid rgba(230, 92, 0, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        canvas { max-width: 100%; }
+
+        .search-wrapper { position: relative; display: inline-flex; align-items: center; margin-bottom: 15px; width: 100%; max-width: 400px; }
+        .search-wrapper input { padding-left: 35px; width: 100%; }
         .search-icon { position: absolute; left: 10px; opacity: 0.7; }
 
-        /* Tabela de Dados */
         #dataTable { width: 100%; border-collapse: collapse; margin-top: 10px; }
         #dataTable th { background: rgba(230, 92, 0, 0.2); color: #FFD700; padding: 10px; text-align: left; }
         #dataTable td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        @media (max-width: 768px) { .header-inner { flex-direction: column; } .charts-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .header-inner { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -102,9 +70,8 @@
         <div class="header-inner">
             <img src="logo_cbmerj.png" alt="Logo CBMERJ" class="logo-cbmerj" onerror="this.src='https://via.placeholder.com/80x80?text=CBMERJ'">
             <div class="header-text">
-                <h1>Dashboard · Incêndios Florestais · CBMERJ</h1>
-                <div class="subtitle">Regulação de Eventos — Foco em Monitoramento de Queimadas</div>
-                <div class="description">Atualização automática ativa</div>
+                <h1>Dashboard · Incêndios Florestais</h1>
+                <div class="subtitle">Regulação de Eventos — D-1</div>
             </div>
             <img src="logo_dppt.png" alt="Logo DPPT" class="logo-dppt" onerror="this.src='https://via.placeholder.com/120x80?text=DPPT'">
         </div>
@@ -117,50 +84,33 @@
         <div class="form-row">
             <label for="dataMonitoramento">Data da Regulação:</label>
             <input type="date" id="dataMonitoramento">
-            <span class="aviso-data">⚠️ Registrar sempre a data do dia anterior fechado!</span>
         </div>
         
         <table class="tabela-preenchimento">
-            <thead>
-                <tr>
-                    <th>Categoria</th>
-                    <th style="text-align: center;">Quantidade Total</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Categoria</th><th style="text-align: center;">Quantidade Total</th></tr></thead>
             <tbody>
-                <tr>
-                    <td>Fora do Parâmetro</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro"></td>
-                </tr>
-                <tr>
-                    <td>Preenchimento remoto de formulário</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário"></td>
-                </tr>
-                <tr>
-                    <td>Agendar</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Agendar"></td>
-                </tr>
-                <tr>
-                    <td>Formulário sem exame de local</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Formulário sem exame de local"></td>
-                </tr>
+                <tr><td>Fora do Parâmetro</td><td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro"></td></tr>
+                <tr><td>Preenchimento remoto de formulário</td><td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário"></td></tr>
+                <tr><td>Agendar</td><td><input type="number" min="0" value="0" data-categoria="Agendar"></td></tr>
+                <tr><td>Formulário sem exame de local</td><td><input type="number" min="0" value="0" data-categoria="Formulário sem exame de local"></td></tr>
             </tbody>
         </table>
         <button class="btn-enviar" onclick="enviarDadosFlorestais()">✅ Enviar Regulação</button>
     </section>
 
     <div class="controls">
-        <button class="btn-refresh" onclick="carregarDadosDaPlanilha()">🔄 Atualizar Dados</button>
+        <button class="btn-refresh" onclick="carregarDadosDaPlanilha()">🔄 Atualizar Gráficos</button>
     </div>
 
     <div class="kpis">
         <div class="kpi-card"><div class="kpi-label">Total Ocorrências</div><div class="kpi-value" id="kpiTotal">0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Dias Monitorados</div><div class="kpi-value" id="kpiDias">0</div></div>
+        <div class="kpi-card"><div class="kpi-label">Dias Regulados</div><div class="kpi-value" id="kpiDias">0</div></div>
     </div>
 
     <div class="charts-grid">
         <div class="chart-container"><canvas id="chartDia"></canvas></div>
         <div class="chart-container"><canvas id="chartCategoria"></canvas></div>
+        <div class="chart-container"><canvas id="chartDist"></canvas></div>
     </div>
 
     <div class="table-container">
@@ -169,21 +119,20 @@
             <input type="text" id="searchDetalhado" placeholder="Buscar categoria, data..." oninput="aplicarFiltros()">
         </div>
         <table id="dataTable">
-            <thead>
-                <tr><th>Data Regulação</th><th>Categoria</th><th>Valor Total</th></tr>
-            </thead>
+            <thead><tr><th>Data Regulação</th><th>Categoria</th><th>Valor Total</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // URL Atual (Se apontar para o DPPT, trará os dados antigos de lá!)
+    // ⚠️ COLOQUE A SUA URL NOVA AQUI
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvHFG7wG2Ieqn_0S0yjZTWc9tFXWPgBYq1GwKvBEVYG8cyEC8wjXpKSn5VuOU14uUbzA/exec";
 
     let dadosOriginais = [];
     let meuChartDia = null;
     let meuChartCat = null;
+    let meuChartDist = null;
 
     function configurarDataDiaAnterior() {
         const hoje = new Date();
@@ -200,47 +149,33 @@
         container.innerHTML = `<div class="status-message status-${tipo}">${mensagem}</div>`;
     }
 
-    function limparStatus() {
-        document.getElementById('statusContainer').innerHTML = '';
-    }
-
     function zerarCamposFormulario() {
-        const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
-        inputs.forEach(input => input.value = 0);
+        document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(input => input.value = 0);
     }
 
     async function enviarDadosFlorestais() {
         const dataReg = document.getElementById('dataMonitoramento').value;
         if (!dataReg) return alert("Selecione a data!");
 
-        mostrarStatus("Enviando regulação para a planilha... Por favor, aguarde.", "loading");
+        mostrarStatus("Enviando regulação...", "loading");
 
         const payload = {
             "Data da regulacao": dataReg,
             "Dia": new Date(dataReg + 'T00:00:00').getDate()
         };
 
-        // Coleta simples (Apenas Categoria = Valor)
-        const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
-        inputs.forEach(input => {
-            const cat = input.getAttribute('data-categoria');
-            const val = parseInt(input.value) || 0;
-            payload[cat] = val; 
+        document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(input => {
+            payload[input.getAttribute('data-categoria')] = parseInt(input.value) || 0;
         });
 
         try {
-            await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            });
-            
-            mostrarStatus("✅ Regulação enviada com sucesso!", "success");
+            await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            mostrarStatus("✅ Regulação enviada!", "success");
             zerarCamposFormulario(); 
-            setTimeout(limparStatus, 4000);
-            setTimeout(carregarDadosDaPlanilha, 1000);
+            setTimeout(() => document.getElementById('statusContainer').innerHTML = '', 4000);
+            setTimeout(carregarDadosDaPlanilha, 1500);
         } catch (e) {
-            mostrarStatus("❌ Erro de conexão ao enviar dados.", "error");
+            mostrarStatus("❌ Erro ao enviar.", "error");
         }
     }
 
@@ -257,16 +192,13 @@
 
             aplicarFiltros();
         } catch (e) {
-            console.error("Erro ao ler dados da planilha:", e);
+            console.error(e);
         }
     }
 
     function aplicarFiltros() {
         const busca = document.getElementById('searchDetalhado').value.toLowerCase();
-        const filtrados = dadosOriginais.filter(d => 
-            (d.Categoria && d.Categoria.toLowerCase().includes(busca)) || 
-            (d.Data && d.Data.includes(busca))
-        );
+        const filtrados = dadosOriginais.filter(d => (d.Categoria && d.Categoria.toLowerCase().includes(busca)) || (d.Data && d.Data.includes(busca)));
         atualizarInterface(filtrados);
     }
 
@@ -274,16 +206,15 @@
         const tbody = document.querySelector('#dataTable tbody');
         tbody.innerHTML = dados.map(d => `<tr><td>${d.Data}</td><td>${d.Categoria}</td><td>${d.Valor}</td></tr>`).join('');
 
-        const total = dados.reduce((acc, curr) => acc + curr.Valor, 0);
-        const diasUnicos = [...new Set(dados.map(d => d.Data))].length;
-        document.getElementById('kpiTotal').textContent = total;
-        document.getElementById('kpiDias').textContent = diasUnicos;
+        document.getElementById('kpiTotal').textContent = dados.reduce((acc, curr) => acc + curr.Valor, 0);
+        document.getElementById('kpiDias').textContent = [...new Set(dados.map(d => d.Data))].length;
 
         const categoriasMap = {};
-        dados.forEach(d => { categoriasMap[d.Categoria] = (categoriasMap[d.Categoria] || 0) + d.Valor; });
-
         const diasMap = {};
-        dados.forEach(d => { diasMap[d.Data] = (diasMap[d.Data] || 0) + d.Valor; });
+        dados.forEach(d => { 
+            categoriasMap[d.Categoria] = (categoriasMap[d.Categoria] || 0) + d.Valor; 
+            diasMap[d.Data] = (diasMap[d.Data] || 0) + d.Valor; 
+        });
 
         renderizarGraficos(Object.keys(diasMap), Object.values(diasMap), Object.keys(categoriasMap), Object.values(categoriasMap));
     }
@@ -291,32 +222,36 @@
     function renderizarGraficos(labelsDias, valoresDias, labelsCats, valoresCats) {
         if(meuChartDia) meuChartDia.destroy();
         if(meuChartCat) meuChartCat.destroy();
+        if(meuChartDist) meuChartDist.destroy();
 
-        const ctxDia = document.getElementById('chartDia').getContext('2d');
-        meuChartDia = new Chart(ctxDia, {
+        // Cores dos Bombeiros/Fogo
+        const paletaCores = ['#E65C00', '#FFD700', '#c62828', '#ff9800'];
+
+        // Gráfico de Linha (Total por Dia)
+        meuChartDia = new Chart(document.getElementById('chartDia').getContext('2d'), {
             type: 'line',
-            data: {
-                labels: labelsDias,
-                datasets: [{ label: 'Evolução Diária (Total)', data: valoresDias, borderColor: '#E65C00', backgroundColor: 'rgba(230,92,0,0.2)', fill: true }]
-            },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
+            data: { labels: labelsDias, datasets: [{ label: 'Total Ocorrências', data: valoresDias, borderColor: '#FFD700', backgroundColor: 'rgba(255, 215, 0, 0.2)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Total de Eventos por Dia', color: '#fff', font: { size: 16 } }, legend: { display: false } } }
         });
 
-        const ctxCat = document.getElementById('chartCategoria').getContext('2d');
-        meuChartCat = new Chart(ctxCat, {
+        // Gráfico de Barras (Por Categoria)
+        meuChartCat = new Chart(document.getElementById('chartCategoria').getContext('2d'), {
             type: 'bar',
-            data: {
-                labels: labelsCats,
-                datasets: [{ label: 'Volume por Categoria', data: valoresCats, backgroundColor: ['#E65C00', '#FFD700', '#1565c0', '#b33600'] }]
-            },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
+            data: { labels: labelsCats, datasets: [{ data: valoresCats, backgroundColor: paletaCores }] },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Eventos por Categoria', color: '#fff', font: { size: 16 } }, legend: { display: false } } }
+        });
+
+        // Gráfico de Rosca (Distribuição)
+        meuChartDist = new Chart(document.getElementById('chartDist').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: labelsCats, datasets: [{ data: valoresCats, backgroundColor: paletaCores, borderColor: '#16213e' }] },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Distribuição por Categoria', color: '#fff', font: { size: 16 } }, legend: { position: 'bottom', labels: { color: '#e0e0e0' } } } }
         });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         configurarDataDiaAnterior();
         carregarDadosDaPlanilha();
-        setInterval(carregarDadosDaPlanilha, 30000);
     });
 </script>
 </body>
