@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard · Incêndios Florestais · CBMERJ</title>
-    <!-- Biblioteca dos Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,7 +14,7 @@
         }
         .container { max-width: 1400px; margin: 0 auto; }
         
-        /* Cabeçalho */
+        /* Cabeçalho Ajustado para travar o tamanho das logos */
         header {
             margin-bottom: 30px; padding: 20px;
             background: rgba(255,255,255,0.05); border-radius: 12px;
@@ -23,13 +22,20 @@
         }
         .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         .header-text { text-align: center; flex: 1; }
-        .logo-cbmerj, .logo-dppt { max-height: 80px; max-width: 200px; object-fit: contain; }
+        
+        /* A MÁGICA DAS LOGOS AQUI: Trava a altura em 80px e não deixa expandir */
+        .logo-cbmerj, .logo-dppt { 
+            height: 80px; 
+            width: auto; 
+            object-fit: contain; 
+            flex-shrink: 0; 
+        }
         
         h1 { color: #E65C00; font-size: 2.2em; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .subtitle { color: #FFD700; font-size: 1.1em; margin-bottom: 4px; }
         .description { color: #b0b0b0; font-size: 0.9em; }
 
-        /* Formulário de Preenchimento */
+        /* Formulário de Preenchimento Simplificado */
         .planilha-diaria {
             background: rgba(255,255,255,0.08); border-radius: 12px;
             padding: 25px; margin-bottom: 30px; border: 2px solid #E65C00;
@@ -41,21 +47,22 @@
             background: rgba(255,255,255,0.1); color: #fff;
         }
         
-        /* Tabela */
-        .tabela-preenchimento { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.3); }
-        .tabela-preenchimento th { background: #E65C00; color: #fff; padding: 12px; }
-        .tabela-preenchimento td { padding: 10px; border: 1px solid rgba(230, 92, 0, 0.2); text-align: center; }
-        .tabela-preenchimento td:first-child { text-align: left; color: #FFD700; font-weight: 600; }
+        /* Tabela Sem Horários */
+        .tabela-preenchimento { width: 100%; max-width: 800px; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.3); }
+        .tabela-preenchimento th { background: #E65C00; color: #fff; padding: 12px; text-align: left; }
+        .tabela-preenchimento td { padding: 10px; border: 1px solid rgba(230, 92, 0, 0.2); }
+        .tabela-preenchimento td:first-child { color: #FFD700; font-weight: 600; width: 70%; }
+        .tabela-preenchimento td:last-child { text-align: center; }
+        
         .tabela-preenchimento input[type="number"] {
-            width: 80px; padding: 8px; border-radius: 4px; border: 1px solid #E65C00;
-            background: rgba(255,255,255,0.1); color: #fff; text-align: center;
+            width: 100%; max-width: 150px; padding: 10px; border-radius: 4px; border: 1px solid #E65C00;
+            background: rgba(255,255,255,0.1); color: #fff; text-align: center; font-size: 1.1em;
         }
-        .input-unico { width: 100% !important; max-width: 400px; }
         .aviso-data { color: #ff4d4d; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
 
         /* Botões e Status */
         .btn-enviar {
-            margin-top: 20px; padding: 15px; width: 100%;
+            margin-top: 20px; padding: 15px; width: 100%; max-width: 800px;
             background: linear-gradient(135deg, #E65C00 0%, #B33600 100%);
             color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1.1em;
         }
@@ -105,50 +112,37 @@
 
     <div id="statusContainer"></div>
 
-    <!-- Formulário Atualizado -->
     <section class="planilha-diaria">
-        <h2>📋 Regulação do Dia Anterior (D-1)</h2>
+        <h2>📋 Regulação Consolidada do Dia Anterior (D-1)</h2>
         <div class="form-row">
             <label for="dataMonitoramento">Data da Regulação:</label>
             <input type="date" id="dataMonitoramento">
-            <span class="aviso-data">⚠️ Registrar sempre a data do dia anterior!</span>
+            <span class="aviso-data">⚠️ Registrar sempre a data do dia anterior fechado!</span>
         </div>
         
         <table class="tabela-preenchimento">
             <thead>
                 <tr>
-                    <th>Categoria de Incêndio</th>
-                    <th>11H30MIN</th>
-                    <th>16H</th>
-                    <th>21H</th>
-                    <th>06H</th>
+                    <th>Categoria</th>
+                    <th style="text-align: center;">Quantidade Total</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>Fora do Parâmetro</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro" data-horario="11h30min"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro" data-horario="16h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro" data-horario="21h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro" data-horario="06h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro"></td>
                 </tr>
                 <tr>
                     <td>Preenchimento remoto de formulário</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário" data-horario="11h30min"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário" data-horario="16h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário" data-horario="21h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário" data-horario="06h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário"></td>
                 </tr>
                 <tr>
                     <td>Agendar</td>
-                    <td><input type="number" min="0" value="0" data-categoria="Agendar" data-horario="11h30min"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Agendar" data-horario="16h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Agendar" data-horario="21h"></td>
-                    <td><input type="number" min="0" value="0" data-categoria="Agendar" data-horario="06h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Agendar"></td>
                 </tr>
                 <tr>
                     <td>Formulário sem exame de local</td>
-                    <td colspan="4"><input type="number" min="0" value="0" class="input-unico" data-categoria="Formulário sem exame de local" data-horario="unico"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Formulário sem exame de local"></td>
                 </tr>
             </tbody>
         </table>
@@ -159,19 +153,16 @@
         <button class="btn-refresh" onclick="carregarDadosDaPlanilha()">🔄 Atualizar Dados</button>
     </div>
 
-    <!-- KPIs -->
     <div class="kpis">
         <div class="kpi-card"><div class="kpi-label">Total Ocorrências</div><div class="kpi-value" id="kpiTotal">0</div></div>
         <div class="kpi-card"><div class="kpi-label">Dias Monitorados</div><div class="kpi-value" id="kpiDias">0</div></div>
     </div>
 
-    <!-- Gráficos -->
     <div class="charts-grid">
         <div class="chart-container"><canvas id="chartDia"></canvas></div>
         <div class="chart-container"><canvas id="chartCategoria"></canvas></div>
     </div>
 
-    <!-- Tabela Detalhada com Busca -->
     <div class="table-container">
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
@@ -187,7 +178,7 @@
 </div>
 
 <script>
-    // URL Atualizada
+    // URL Atual (Se apontar para o DPPT, trará os dados antigos de lá!)
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT5GRQBx1N3tBnbPdY5_xaPrdzX5m_hBMlL6YYxoPMq1nEfbYykwd76NVpXfjD6LhuLQ/exec";
 
     let dadosOriginais = [];
@@ -213,7 +204,6 @@
         document.getElementById('statusContainer').innerHTML = '';
     }
 
-    // Função que zera todos os campos numéricos da tabela
     function zerarCamposFormulario() {
         const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
         inputs.forEach(input => input.value = 0);
@@ -230,17 +220,12 @@
             "Dia": new Date(dataReg + 'T00:00:00').getDate()
         };
 
+        // Coleta simples (Apenas Categoria = Valor)
         const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
         inputs.forEach(input => {
             const cat = input.getAttribute('data-categoria');
-            const hor = input.getAttribute('data-horario');
             const val = parseInt(input.value) || 0;
-            
-            if(hor === 'unico') {
-                payload[`${cat}_quant_unico`] = val;
-            } else {
-                payload[`${cat}_quant_${hor}`] = val;
-            }
+            payload[cat] = val; 
         });
 
         try {
@@ -253,7 +238,6 @@
             mostrarStatus("✅ Regulação enviada com sucesso!", "success");
             zerarCamposFormulario(); 
             setTimeout(limparStatus, 4000);
-            
             setTimeout(carregarDadosDaPlanilha, 1000);
         } catch (e) {
             mostrarStatus("❌ Erro de conexão ao enviar dados.", "error");
