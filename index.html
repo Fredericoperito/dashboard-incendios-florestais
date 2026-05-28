@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard · Incêndios Florestais · CBMERJ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* Estilos visuais mantidos no padrão DPPT / CBMERJ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0; padding: 20px; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            margin-bottom: 30px; padding: 20px;
+            background: rgba(255,255,255,0.05); border-radius: 12px;
+            border: 1px solid rgba(230, 92, 0, 0.4); /* Laranja/Fogo */
+        }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .header-text { text-align: center; flex: 1; }
+        h1 { color: #E65C00; font-size: 2.2em; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .subtitle { color: #FFD700; font-size: 1.1em; margin-bottom: 4px; }
+        
+        .planilha-diaria {
+            background: rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 25px; margin-bottom: 30px; border: 2px solid #E65C00;
+        }
+        .form-row { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+        .form-row label { color: #FFD700; font-weight: 600; min-width: 220px; }
+        .form-row input[type="date"] {
+            padding: 10px; border-radius: 6px; border: 1px solid #E65C00;
+            background: rgba(255,255,255,0.1); color: #fff; font-size: 1em;
+        }
+        .tabela-preenchimento { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tabela-preenchimento th { background: #E65C00; color: #fff; padding: 12px; }
+        .tabela-preenchimento td { padding: 10px; border: 1px solid rgba(230, 92, 0, 0.2); text-align: center; }
+        .tabela-preenchimento td:first-child { text-align: left; color: #FFD700; font-weight: 600; }
+        .tabela-preenchimento input[type="number"] {
+            width: 80px; padding: 8px; border-radius: 4px; border: 1px solid #E65C00;
+            background: rgba(255,255,255,0.1); color: #fff; text-align: center;
+        }
+        .btn-enviar {
+            margin-top: 20px; padding: 15px; width: 100%;
+            background: linear-gradient(135deg, #E65C00 0%, #B33600 100%);
+            color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        .aviso-data { color: #ff4d4d; font-size: 0.9em; margin-left: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="header-inner">
+            <div class="header-text">
+                <h1>Dashboard · Incêndios Florestais · CBMERJ</h1>
+                <div class="subtitle">Regulação de Eventos — Foco em Monitoramento de Queimadas</div>
+            </div>
+        </div>
+    </header>
+
+    <section class="planilha-diaria">
+        <h2>📋 Regulação do Dia Anterior (D-1)</h2>
+        <div class="form-row">
+            <label for="dataMonitoramento">Data da Regulação:</label>
+            <input type="date" id="dataMonitoramento">
+            <span class="aviso-data">⚠️ Atenção: Registrar sempre a data do dia anterior!</span>
+        </div>
+
+        <table class="tabela-preenchimento">
+            <thead>
+                <tr>
+                    <th>Categoria de Incêndio</th>
+                    <th>11H30MIN</th>
+                    <th>16H</th>
+                    <th>21H</th>
+                    <th>06H</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Combate em Vegetação Nativa</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Vegetacao Nativa" data-horario="11h30min"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Vegetacao Nativa" data-horario="16h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Vegetacao Nativa" data-horario="21h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Vegetacao Nativa" data-horario="06h"></td>
+                </tr>
+                <tr>
+                    <td>Foco de Incêndio em Unid. de Conservação</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Unid Conservacao" data-horario="11h30min"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Unid Conservacao" data-horario="16h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Unid Conservacao" data-horario="21h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Unid Conservacao" data-horario="06h"></td>
+                </tr>
+                <tr>
+                    <td>Queimada em Terreno Baldio / Área Urbana</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Area Urbana" data-horario="11h30min"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Area Urbana" data-horario="16h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Area Urbana" data-horario="21h"></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Area Urbana" data-horario="06h"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn-enviar" onclick="enviarDadosFlorestais()">✅ Enviar Regulação</button>
+    </section>
+</div>
+
+<script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT5GRQBx1N3tBnbPdY5_xaPrdzX5m_hBMlL6YYxoPMq1nEfbYykwd76NVpXfjD6LhuLQ/exec";
+
+    // MÁGICA DA DATA: Define o valor inicial do campo como ONTEM (Dia Anterior)
+    function configurarDataDiaAnterior() {
+        const hoje = new Date();
+        const ontem = new Date(hoje);
+        ontem.setDate(hoje.getDate() - 1); // Subtrai 1 dia
+
+        // Formata para o padrão AAAA-MM-DD exigido pelo input date
+        const ano = ontem.getFullYear();
+        const mes = String(ontem.getMonth() + 1).padStart(2, '0');
+        const dia = String(ontem.getDate()).padStart(2, '0');
+        
+        document.getElementById('dataMonitoramento').value = `${ano}-${mes}-${dia}`;
+    }
+
+    async function enviarDadosFlorestais() {
+        const dataReg = document.getElementById('dataMonitoramento').value;
+        if (!dataReg) return alert("Por favor, selecione a data!");
+
+        // Captura o dia numérico da data selecionada para ajudar nos filtros posteriores
+        const diaNumerico = new Date(dataReg + 'T00:00:00').getDate();
+
+        const payload = {
+            'Data da regulacao': dataReg,
+            'Dia': diaNumerico,
+            'Tipo_Painel': 'Incendios_Florestais'
+        };
+
+        // Captura de forma dinâmica todos os inputs preenchidos
+        const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
+        inputs.forEach(input => {
+            const cat = input.getAttribute('data-categoria');
+            const hor = input.getAttribute('data-horario');
+            const val = parseInt(input.value) || 0;
+            payload[`${cat}_quant_${hor}`] = val;
+        });
+
+        try {
+            alert("Enviando dados da regulação...");
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            });
+            alert("✅ Dados salvos com sucesso na planilha!");
+        } catch (e) {
+            alert("❌ Erro ao conectar com o Google Sheets.");
+        }
+    }
+
+    // Inicializa a página aplicando a regra de D-1
+    document.addEventListener('DOMContentLoaded', () => {
+        configurarDataDiaAnterior();
+    });
+</script>
+</body>
+</html>
