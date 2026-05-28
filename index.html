@@ -153,6 +153,33 @@
         document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(input => input.value = 0);
     }
 
+    // 🧹 Função Limpadora: Transforma qualquer formato maluco em DD/MM/AAAA
+    function formatarDataSimples(textoData) {
+        if (!textoData) return "-";
+        let str = String(textoData);
+        
+        // Se já tem barra, retorna apenas os 10 primeiros caracteres (ex: 28/05/2026)
+        if (str.includes("/")) return str.substring(0, 10);
+        
+        // Se for o formato ISO do sistema (ex: 2026-05-28T00:00:00)
+        if (str.includes("T")) {
+            let partes = str.split("T")[0].split("-");
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        
+        // Se for o formato de texto gigante (ex: Thu May 28 2026...)
+        let dataObj = new Date(str);
+        if (!isNaN(dataObj)) {
+            let dia = String(dataObj.getDate()).padStart(2, '0');
+            let mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+            let ano = dataObj.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+        
+        // Se nada der certo, recorta o início para não destruir a tabela
+        return str.substring(0, 10);
+    }
+
     async function enviarDadosFlorestais() {
         const dataReg = document.getElementById('dataMonitoramento').value;
         if (!dataReg) return alert("Selecione a data!");
@@ -174,7 +201,6 @@
             zerarCamposFormulario(); 
             setTimeout(() => document.getElementById('statusContainer').innerHTML = '', 4000);
             
-            // Aguarda 1 segundo e recarrega a planilha
             setTimeout(carregarDadosDaPlanilha, 1000);
         } catch (e) {
             mostrarStatus("❌ Erro ao enviar.", "error");
@@ -183,19 +209,15 @@
 
     async function carregarDadosDaPlanilha() {
         try {
-            // MÁGICA CONTRA O CACHE: O "?t=" adiciona os milissegundos atuais na URL
             const urlSemCache = APPS_SCRIPT_URL + "?t=" + new Date().getTime();
-            
             const res = await fetch(urlSemCache);
             const dados = await res.json();
             
-            // Verificação de erro vinda do Google Sheets
-            if (dados.erro) {
-                throw new Error(dados.erro);
-            }
+            if (dados.erro) throw new Error(dados.erro);
             
+            // Aqui passamos a data pela nossa nova função limpadora
             dadosOriginais = dados.map(row => ({
-                Data: row['Data da regulacao'] || row['data'] || row['Data'],
+                Data: formatarDataSimples(row['Data da regulacao'] || row['data'] || row['Data']),
                 Categoria: row['categoria'] || row['Categoria'],
                 Valor: parseInt(row['valor'] || row['Valor'] || 0)
             })).filter(d => d.Valor > 0);
@@ -236,24 +258,20 @@
         if(meuChartCat) meuChartCat.destroy();
         if(meuChartDist) meuChartDist.destroy();
 
-        // Cores dos Bombeiros/Fogo
         const paletaCores = ['#E65C00', '#FFD700', '#c62828', '#ff9800'];
 
-        // Gráfico de Linha (Total por Dia)
         meuChartDia = new Chart(document.getElementById('chartDia').getContext('2d'), {
             type: 'line',
             data: { labels: labelsDias, datasets: [{ label: 'Total Ocorrências', data: valoresDias, borderColor: '#FFD700', backgroundColor: 'rgba(255, 215, 0, 0.2)', fill: true, tension: 0.3 }] },
             options: { responsive: true, plugins: { title: { display: true, text: 'Total de Eventos por Dia', color: '#fff', font: { size: 16 } }, legend: { display: false } } }
         });
 
-        // Gráfico de Barras (Por Categoria)
         meuChartCat = new Chart(document.getElementById('chartCategoria').getContext('2d'), {
             type: 'bar',
             data: { labels: labelsCats, datasets: [{ data: valoresCats, backgroundColor: paletaCores }] },
             options: { responsive: true, plugins: { title: { display: true, text: 'Eventos por Categoria', color: '#fff', font: { size: 16 } }, legend: { display: false } } }
         });
 
-        // Gráfico de Rosca (Distribuição)
         meuChartDist = new Chart(document.getElementById('chartDist').getContext('2d'), {
             type: 'doughnut',
             data: { labels: labelsCats, datasets: [{ data: valoresCats, backgroundColor: paletaCores, borderColor: '#16213e' }] },
