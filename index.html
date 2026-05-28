@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard · Incêndios Florestais · CBMERJ</title>
+    <!-- Biblioteca dos Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +23,6 @@
         }
         .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         .header-text { text-align: center; flex: 1; }
-        /* Garanta que os arquivos de imagem estejam escritos exatamente assim na pasta do seu PC */
         .logo-cbmerj, .logo-dppt { max-height: 80px; max-width: 200px; object-fit: contain; }
         
         h1 { color: #E65C00; font-size: 2.2em; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -93,18 +93,19 @@
 <div class="container">
     <header>
         <div class="header-inner">
-            <img src="logo_cbmerj.png" alt="Logo CBMERJ" class="logo_cbmerj" onerror="this.src='https://via.placeholder.com/80x80?text=CBMERJ'">
+            <img src="logo_cbmerj.png" alt="Logo CBMERJ" class="logo-cbmerj" onerror="this.src='https://via.placeholder.com/80x80?text=CBMERJ'">
             <div class="header-text">
                 <h1>Dashboard · Incêndios Florestais · CBMERJ</h1>
-                <div class="subtitle">Regulação de Eventos — Diretoria de Pesquisas, Perícias e Testes</div>
+                <div class="subtitle">Regulação de Eventos — Foco em Monitoramento de Queimadas</div>
                 <div class="description">Atualização automática ativa</div>
             </div>
-            <img src="logo_dppt.png" alt="Logo DPPT" class="logo_dppt" onerror="this.src='https://via.placeholder.com/120x80?text=DPPT'">
+            <img src="logo_dppt.png" alt="Logo DPPT" class="logo-dppt" onerror="this.src='https://via.placeholder.com/120x80?text=DPPT'">
         </div>
     </header>
 
     <div id="statusContainer"></div>
 
+    <!-- Formulário Atualizado -->
     <section class="planilha-diaria">
         <h2>📋 Regulação do Dia Anterior (D-1)</h2>
         <div class="form-row">
@@ -116,7 +117,7 @@
         <table class="tabela-preenchimento">
             <thead>
                 <tr>
-                    <th>Categoria</th>
+                    <th>Categoria de Incêndio</th>
                     <th>11H30MIN</th>
                     <th>16H</th>
                     <th>21H</th>
@@ -158,16 +159,19 @@
         <button class="btn-refresh" onclick="carregarDadosDaPlanilha()">🔄 Atualizar Dados</button>
     </div>
 
+    <!-- KPIs -->
     <div class="kpis">
         <div class="kpi-card"><div class="kpi-label">Total Ocorrências</div><div class="kpi-value" id="kpiTotal">0</div></div>
         <div class="kpi-card"><div class="kpi-label">Dias Monitorados</div><div class="kpi-value" id="kpiDias">0</div></div>
     </div>
 
+    <!-- Gráficos -->
     <div class="charts-grid">
         <div class="chart-container"><canvas id="chartDia"></canvas></div>
         <div class="chart-container"><canvas id="chartCategoria"></canvas></div>
     </div>
 
+    <!-- Tabela Detalhada com Busca -->
     <div class="table-container">
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
@@ -183,7 +187,7 @@
 </div>
 
 <script>
-    // ⚠️ SUBSTITUA COM A SUA URL DO GOOGLE APPS SCRIPT NOVA
+    // URL Atualizada
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT5GRQBx1N3tBnbPdY5_xaPrdzX5m_hBMlL6YYxoPMq1nEfbYykwd76NVpXfjD6LhuLQ/exec";
 
     let dadosOriginais = [];
@@ -209,7 +213,7 @@
         document.getElementById('statusContainer').innerHTML = '';
     }
 
-    // 🔄 FUNÇÃO PARA ZERAR CAMPOS APÓS O ENVIO SUCCESSO
+    // Função que zera todos os campos numéricos da tabela
     function zerarCamposFormulario() {
         const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
         inputs.forEach(input => input.value = 0);
@@ -221,10 +225,9 @@
 
         mostrarStatus("Enviando regulação para a planilha... Por favor, aguarde.", "loading");
 
-        // Montando o objeto exatamente com os nomes que o seu script espera receber
         const payload = {
-            "data": dataReg,
-            "dia": new Date(dataReg + 'T00:00:00').getDate()
+            "Data da regulacao": dataReg,
+            "Dia": new Date(dataReg + 'T00:00:00').getDate()
         };
 
         const inputs = document.querySelectorAll('.tabela-preenchimento input[type="number"]');
@@ -233,8 +236,11 @@
             const hor = input.getAttribute('data-horario');
             const val = parseInt(input.value) || 0;
             
-            // Cria uma chave única combinando categoria e horário para o Script processar
-            payload[`${cat}_${hor}`] = val;
+            if(hor === 'unico') {
+                payload[`${cat}_quant_unico`] = val;
+            } else {
+                payload[`${cat}_quant_${hor}`] = val;
+            }
         });
 
         try {
@@ -245,10 +251,9 @@
             });
             
             mostrarStatus("✅ Regulação enviada com sucesso!", "success");
-            zerarCamposFormulario(); // <-- Aqui os números resetam!
+            zerarCamposFormulario(); 
             setTimeout(limparStatus, 4000);
             
-            // Recarrega os dados para atualizar os gráficos
             setTimeout(carregarDadosDaPlanilha, 1000);
         } catch (e) {
             mostrarStatus("❌ Erro de conexão ao enviar dados.", "error");
@@ -260,7 +265,6 @@
             const res = await fetch(APPS_SCRIPT_URL);
             const dados = await res.json();
             
-            // Mapeia tratando possíveis variações de nomes de colunas da planilha
             dadosOriginais = dados.map(row => ({
                 Data: row['Data da regulacao'] || row['data'] || row['Data'],
                 Categoria: row['categoria'] || row['Categoria'],
@@ -283,30 +287,24 @@
     }
 
     function atualizarInterface(dados) {
-        // 1. Atualizar Tabela Detalhada
         const tbody = document.querySelector('#dataTable tbody');
         tbody.innerHTML = dados.map(d => `<tr><td>${d.Data}</td><td>${d.Categoria}</td><td>${d.Valor}</td></tr>`).join('');
 
-        // 2. Calcular KPIs
         const total = dados.reduce((acc, curr) => acc + curr.Valor, 0);
         const diasUnicos = [...new Set(dados.map(d => d.Data))].length;
         document.getElementById('kpiTotal').textContent = total;
         document.getElementById('kpiDias').textContent = diasUnicos;
 
-        // 3. Preparar dados para Gráfico de Categorias
         const categoriasMap = {};
         dados.forEach(d => { categoriasMap[d.Categoria] = (categoriasMap[d.Categoria] || 0) + d.Valor; });
 
-        // 4. Preparar dados para Gráfico por Dia
         const diasMap = {};
         dados.forEach(d => { diasMap[d.Data] = (diasMap[d.Data] || 0) + d.Valor; });
 
-        // Renderizar ou atualizar os gráficos para não ficarem em branco
         renderizarGraficos(Object.keys(diasMap), Object.values(diasMap), Object.keys(categoriasMap), Object.values(categoriasMap));
     }
 
     function renderizarGraficos(labelsDias, valoresDias, labelsCats, valoresCats) {
-        // Destrói os gráficos antigos antes de recriar para evitar sobreposição visual
         if(meuChartDia) meuChartDia.destroy();
         if(meuChartCat) meuChartCat.destroy();
 
@@ -334,7 +332,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         configurarDataDiaAnterior();
         carregarDadosDaPlanilha();
-        setInterval(carregarDadosDaPlanilha, 30000); // Atualiza sozinho a cada 30s
+        setInterval(carregarDadosDaPlanilha, 30000);
     });
 </script>
 </body>
