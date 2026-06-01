@@ -30,8 +30,6 @@
         .tabela-preenchimento td:first-child { color: #FFD700; font-weight: 600; width: 70%; }
         .tabela-preenchimento td:last-child { text-align: center; }
         .tabela-preenchimento input[type="number"] { width: 100%; max-width: 150px; padding: 10px; border-radius: 4px; border: 1px solid #E65C00; background: rgba(255,255,255,0.1); color: #fff; text-align: center; font-size: 1.1em; }
-        
-        .aviso-data { color: #ff4d4d; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
 
         .btn-enviar { margin-top: 20px; padding: 15px; width: 100%; max-width: 800px; background: linear-gradient(135deg, #E65C00 0%, #B33600 100%); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1.1em; }
         .btn-enviar:hover { opacity: 0.9; }
@@ -48,7 +46,6 @@
         .kpi-label { color: #b0b0b0; font-size: 0.9em; margin-bottom: 5px; }
         .kpi-value { font-size: 2.2em; font-weight: bold; color: #FFD700; }
         
-        /* Grade de Gráficos */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 30px; }
         .chart-container, .table-container { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; border: 1px solid rgba(230, 92, 0, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; }
         canvas { max-width: 100%; }
@@ -86,7 +83,7 @@
             <input type="date" id="dataMonitoramento">
         </div>
         
-<table class="tabela-preenchimento">
+        <table class="tabela-preenchimento">
             <thead>
                 <tr>
                     <th>Categoria</th>
@@ -154,7 +151,6 @@
 </div>
 
 <script>
-    // ⚠️ COLOQUE A SUA URL NOVA AQUI (Terminando em /exec)
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvHFG7wG2Ieqn_0S0yjZTWc9tFXWPgBYq1GwKvBEVYG8cyEC8wjXpKSn5VuOU14uUbzA/exec";
 
     let dadosOriginais = [];
@@ -181,30 +177,29 @@
         document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(input => input.value = 0);
     }
 
-    // 🧹 Função Limpadora: Transforma qualquer formato maluco em DD/MM/AAAA
+    // A Mágica de formatação da data blindada
     function formatarDataSimples(textoData) {
         if (!textoData) return "-";
-        let str = String(textoData);
+        let str = String(textoData).trim();
         
-        // Se já tem barra, retorna apenas os 10 primeiros caracteres (ex: 28/05/2026)
-        if (str.includes("/")) return str.substring(0, 10);
-        
-        // Se for o formato ISO do sistema (ex: 2026-05-28T00:00:00)
-        if (str.includes("T")) {
-            let partes = str.split("T")[0].split("-");
+        // Ex: 2026-06-01 (Formato banco de dados)
+        if (str.match(/^\d{4}-\d{2}-\d{2}/)) {
+            let partes = str.substring(0, 10).split("-");
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
         
-        // Se for o formato de texto gigante (ex: Thu May 28 2026...)
+        // Ex: 01/06/2026 (Se já vier bonito)
+        if (str.includes("/")) return str.substring(0, 10);
+        
+        // Ex: Mon Jun 01 2026 ... (O texto gigante da sua imagem)
         let dataObj = new Date(str);
-        if (!isNaN(dataObj)) {
+        if (!isNaN(dataObj.getTime())) {
             let dia = String(dataObj.getDate()).padStart(2, '0');
             let mes = String(dataObj.getMonth() + 1).padStart(2, '0');
             let ano = dataObj.getFullYear();
             return `${dia}/${mes}/${ano}`;
         }
         
-        // Se nada der certo, recorta o início para não destruir a tabela
         return str.substring(0, 10);
     }
 
@@ -243,9 +238,8 @@
             
             if (dados.erro) throw new Error(dados.erro);
             
-            // Aqui passamos a data pela nossa nova função limpadora
             dadosOriginais = dados.map(row => ({
-                Data: formatarDataSimples(row['Data da regulacao'] || row['data'] || row['Data']),
+                Data: formatarDataSimples(row['Data da regulacao'] || row['data'] || row['Data']), // Limpador em ação
                 Categoria: row['categoria'] || row['Categoria'],
                 Valor: parseInt(row['valor'] || row['Valor'] || 0)
             })).filter(d => d.Valor > 0);
@@ -286,7 +280,7 @@
         if(meuChartCat) meuChartCat.destroy();
         if(meuChartDist) meuChartDist.destroy();
 
-        const paletaCores = ['#E65C00', '#FFD700', '#c62828', '#ff9800'];
+        const paletaCores = ['#E65C00', '#FFD700', '#c62828', '#ff9800', '#4CAF50'];
 
         meuChartDia = new Chart(document.getElementById('chartDia').getContext('2d'), {
             type: 'line',
