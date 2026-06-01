@@ -86,14 +86,41 @@
             <input type="date" id="dataMonitoramento">
         </div>
         
-        <table class="tabela-preenchimento">
-            <thead><tr><th>Categoria</th><th style="text-align: center;">Quantidade Total</th></tr></thead>
+<table class="tabela-preenchimento">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th style="text-align: center;">Quantidade Total</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Fora do Parâmetro</td><td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro"></td></tr>
-                <tr><td>Preenchimento remoto de formulário</td><td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário"></td></tr>
-                <tr><td>Agendar</td><td><input type="number" min="0" value="0" data-categoria="Agendar"></td></tr>
-                <tr><td>Formulário agendado (sem exame de local)</td><td><input type="number" min="0" value="0" data-categoria="Formulário agendado (sem exame de local)"></td></tr>
-                <tr><td>Exame de local</td><td><input type="number" min="0" value="0" data-categoria="Exame de local"></td></tr>
+                <tr>
+                    <td>Fora do Parâmetro</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Fora do Parâmetro"></td>
+                </tr>
+                <tr>
+                    <td>Preenchimento remoto de formulário</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto de formulário"></td>
+                </tr>
+                <tr>
+                    <td>Agendar <br><small style="color: #ff9800; font-weight: normal;">(Para o perito do dia seguinte)</small></td>
+                    <td><input type="number" min="0" value="0" data-categoria="Agendar"></td>
+                </tr>
+
+                <tr style="background-color: #000; border-top: 2px solid #E65C00; border-bottom: 2px solid #E65C00;">
+                    <td colspan="2" style="text-align: center; color: #FFD700; font-weight: bold; padding: 12px; letter-spacing: 1px;">
+                        👇 RECEBIDOS DO PERITO DO DIA ANTERIOR 👇
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Formulário agendado (sem exame de local)</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Formulário agendado (sem exame de local)"></td>
+                </tr>
+                <tr>
+                    <td>Exame de local</td>
+                    <td><input type="number" min="0" value="0" data-categoria="Exame de local"></td>
+                </tr>
             </tbody>
         </table>
         <button class="btn-enviar" onclick="enviarDadosFlorestais()">✅ Enviar Regulação</button>
